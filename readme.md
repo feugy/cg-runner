@@ -14,6 +14,7 @@ Each fixtures is separated in two file (with the same name): X.in and X.out.
 Fixtures files are plain text files.
 
 Example:
+
     + challenges
     |--+ genome-sequencing
        |-- genome-sequencing.js
