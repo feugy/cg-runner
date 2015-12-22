@@ -41,3 +41,6 @@ As well, it can't show you the beautiful CodinGame's animations and games.
 [node]: https://nodejs.org
 [cg]: https://www.codingame.com
 
+
+## TODO
+- Add tests

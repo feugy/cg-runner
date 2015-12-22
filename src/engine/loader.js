@@ -6,7 +6,7 @@ const resolve = require(`path`).resolve
 const loadFixtures = (folder, done) => {
   folder = resolve(folder)
   fs.readdir(folder, (err, entries) => {
-    if (err) {
+    if (err || entries.length === 0) {
       return done(new Error(`failed to read challenge subfolder ${folder}: ${err}`))
     }
     // only keep inputs

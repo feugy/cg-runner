@@ -22,8 +22,12 @@ const runOnce = (file, opts, done) => {
   })
 
   let start = Date.now()
+  let fixturePath = path.dirname(file)
 
-  loadFixtures(path.dirname(file), (err, fixtures) => {
+  loadFixtures(fixturePath, (err, fixtures) => {
+    if (err) {
+      return done(err)
+    }
     logger.runner(`loaded ${chalk.green(fixtures.length)} fixtures in ${Date.now() - start} ms`)
     start = Date.now()
 
