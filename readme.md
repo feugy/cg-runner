@@ -29,6 +29,9 @@ Options:
   - `-f, --folder <folder>` specify challenges folder (default to 'challenges')
   - `-w, --watch` does not quit and run again when challenge file changes
 
+If you want to skip some fixtures, give your `.in` file another extension.
+If you want to test against only one fixture, use the `.in.only` extension.
+
 
 ## Limitations
 
@@ -44,4 +47,7 @@ As well, it can't show you the beautiful CodinGame's animations and games.
 
 
 ## TODO
-- Add tests
+- use timeout for individual tests
+- use timeout between outputs
+- add tests
+- use sourceMap to display runtime errors

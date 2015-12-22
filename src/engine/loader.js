@@ -10,21 +10,22 @@ const loadFixtures = (folder, done) => {
       return done(new Error(`failed to read challenge subfolder ${folder}: ${err}`))
     }
     // only keep inputs
-    entries = entries.filter(e => /\.in$/.test(e))
+    let only = entries.filter(e => /\.in\.only$/.test(e))[0]
+    entries = only ? [only] : entries.filter(e => /\.in?$/.test(e))
     let fixtures = []
     entries.forEach(file => {
-      let name = file.replace(/\.in$/, '')
-      file = resolve(folder, `${name}.in`)
+      let name = file.replace(/\.in(\.only)?$/, '')
+      let inFile = resolve(folder, file)
 
-      fs.readFile(file, (err, input) => {
+      fs.readFile(inFile, (err, input) => {
         if (err) {
-          return done(new Error(`failed to read input fixture ${file}: ${err}`))
+          return done(new Error(`failed to read input fixture ${inFile}: ${err}`))
         }
 
-        file = resolve(folder, `${name}.out`)
-        fs.readFile(file, (err, output) => {
+        let outFile = resolve(folder, `${name}.out`)
+        fs.readFile(outFile, (err, output) => {
           if (err) {
-            return done(new Error(`failed to read ${file}: ${err}`))
+            return done(new Error(`failed to read ${outFile}: ${err}`))
           }
 
           fixtures.push({
