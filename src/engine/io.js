@@ -26,6 +26,11 @@ const setupIO = (input, out, expect) => {
     }
 
     out.push({args, err})
+
+    // interrupt execution at end
+    if (expectIdx == expect.length) {
+      throw new Error('eof')
+    }
   }
 
   global.printErr = function() {
