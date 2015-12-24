@@ -4,6 +4,12 @@
 const program = require(`commander`)
 const descriptor = require(`../package.json`)
 const run = require(`./engine/runner`)
+const monitorCtrlC = require(`monitorctrlc`)
+
+monitorCtrlC(process.exit)
+
+const parseString = str => str
+const parseNumber = str => +str
 
 program.
   version(descriptor.version).
@@ -14,11 +20,23 @@ program.
   a collections of fixtures.
 
   Each fixtures is separated in two file (with the same name): X.in and X.out.
-  Fixtures files are plain text files.`).
-  option(`-f, --folder <folder>`, `specify challenges folder (default to './challenges')`).
+  Fixtures files are plain text files.
+
+  Supported languages (and their file extensions) are:
+  - JavaScript (.js)
+  - Python (.py)
+  `).
+  option(`-f, --folder <folder>`, `specify challenges folder (default to './challenges')`, parseString, './challenges').
+  option(`-l, --langage <langage>`, `langage of your solution (default to 'javascript')`, parseString, 'javascript').
+  option(`-t, --timeout <timeout>`, `maximum timeout between each ouputs, in milliseconds (default to 300)`, parseNumber, 300).
   option(`-w, --watch`, `does not quit and run again when challenge file changes`).
   arguments(`<challenge>`).
-  action((challenge, opts) => run(challenge, opts))
+  action((challenge, opts) => run(challenge, {
+    watch: opts.watch,
+    langage: opts.langage,
+    timeout: opts.timeout,
+    folder: opts.folder
+  }).then(process.exit).catch(process.exit))
 
 program.parse(process.argv)
 program._name = Object.keys(descriptor.bin)[0]

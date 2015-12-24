@@ -6,6 +6,8 @@ A command-line program to run your JavaScript solutions locally, like on [CodinG
 
     Usage: cg-runner [options] <challenge>
 
+Runs your algorithms like on cofingame.com.
+
 Give the name of a challenge (located into challenges folder), and it will
 search for a sub-folder with that name containing a js file (same name) and
 a collections of fixtures.
@@ -23,31 +25,73 @@ Example:
        |-- AGATTACAGA.in
        |-- AGATTACAGA.out
 
+Supported languages (and their file extensions) are:
+  - JavaScript (.js)
+  - Python (.py)
+
 Options:
-  - `-h, --help` output usage information
-  - `-V, --version` output the version number
-  - `-f, --folder <folder>` specify challenges folder (default to 'challenges')
-  - `-w, --watch` does not quit and run again when challenge file changes
+
+  - `-h, --help`               output usage information
+  - `-V, --version`            output the version number
+  - `-f, --folder <folder>`    specify challenges folder (default to './challenges')
+  - `-l, --langage <langage>`  langage of your solution (default to 'javascript')
+  - `-t, --timeout <timeout>`  maximum timeout between each ouputs, in milliseconds (default to 300)
+  - `-w, --watch`              does not quit and run again when challenge file changes
 
 If you want to skip some fixtures, give your `.in` file another extension.
 If you want to test against only one fixture, use the `.in.only` extension.
 
 
-## Limitations
+## Engines
 
-As it's written in pure [Node.js][node], it only runs solutions written in JavaScript.
-Be warned that it uses [Babel][babel] to compile from ES2015 to ES5, so you may accidentaly
-use language features unsupported on CodinGame, which uses *only* [JavaScript 1.8.5][faq]
+Try to stick as much as possible to [CodingGame][faq] versions and library.
+It will ease copy-pasting from and to the online IDE.
 
-As well, it can't show you the beautiful CodinGame's animations and games.
+### JavaScript (.js extension)
+To run JavaScript, you need to download the [proper build][spidermonkey] of SpiderMonkey, Mozilla's JS engine.
+
+Choose the `jsshell-XXX.zip` file of your platform, and unzip it into the `js-engine` folder of cg-runner.
+
+### Python (.py extension)
+You need to have an accessible `python` command on your environment.
+Goes to [Pyhton][python] download page, and follow instructions relative to your operating system.
+
+
+## Limitations and adaptations
+
+Obviously, you can't simulate complex challenges like bots with a bunch of static input files.
+And you won't see beautiful CodinGame's animations.
+Take it as a simple way to debug locally your solutions on specific cases.
+
+If the challenge contains a game loop, you need to reflect "turns" in your `.in` fixtures
+by adding a blank line (no tabs, no space) between them.
+
+A practical example for a challenge expecting 2 inputs at each turns:
+
+    2
+    10 41
+
+    2
+    10 40
+
+    2
+    9 40
+
+Cg-runner launches your algorithm in a separated process,
+using the relevant runtime (JavaScript, Phython, Java...).
+
+As on CodinGame, it awaits on standard output stream, and consider standard error stream as debug information.
+
+But the both streams are not synchronized, and you may received debug data mixed with output: order within each
+streams is garantee, but not across them.
+
+
+## TODO
+- add tests
+- support java, scala...
 
 [faq]: https://www.codingame.com/faq
 [node]: https://nodejs.org
 [cg]: https://www.codingame.com
-
-
-## TODO
-- use timeout for individual tests
-- use timeout between outputs
-- add tests
-- use sourceMap to display runtime errors
+[spidermonkey]: https://ftp.mozilla.org/pub/firefox/nightly/latest-mozilla-central/
+[python]: https://www.python.org/downloads/

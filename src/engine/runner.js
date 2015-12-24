@@ -1,32 +1,23 @@
 'use strict'
 
-const babel = require(`babel-core`)
 const path = require(`path`)
 const fs = require(`fs`)
 const chalk = require(`chalk`)
-const setupIO = require(`./io`)
 const logger = require(`../logger`)
+const execute = require(`./execute`)
 const loadFixtures = require(`./loader`)
-
-const babelOpts = {
-  presets: [`es2015`]
-}
-
-const defaultDone = err => {
-  if (err) {
-    logger.error(err.stack)
-  } else {
-    logger.runner(`execution successful !`)
-  }
-}
+const supported = require(`./langages`)
 
 const print = (out) => {
   let turn = 1
-  return out.some(trace => {
-    if (!trace.debug) {
-      logger.runner(`--- turn ${turn++}`)
+  logger.runner(`--- turn ${turn++}`)
+  return out.some((trace, i) => {
+    if (trace.line) {
+      logger[trace.debug ? `debug` : `out`](trace.line)
+      if (!trace.debug && i !== out.length - 1) {
+        logger.runner(`--- turn ${turn++}`)
+      }
     }
-    logger[trace.debug ? `debug` : `out`].apply(console, trace.args)
     // display error
     if (trace.err) {
       logger.error(trace.err.message)
@@ -35,73 +26,74 @@ const print = (out) => {
   })
 }
 
-const runOnce = (file, opts, done) => {
-  done = done || defaultDone
-
-  let start = Date.now()
-  let fixturePath = path.dirname(file)
-
-  loadFixtures(fixturePath, (err, fixtures) => {
-    if (err) {
-      return done(err)
+const runTest = (opts, fixtures) =>
+  new Promise((resolve, reject) => {
+    // no more test to be run
+    if (fixtures.length === 0) {
+      return resolve()
     }
-    logger.runner(`loaded ${chalk.green(fixtures.length)} fixtures in ${Date.now() - start} ms`)
-    start = Date.now()
+    let fixture = fixtures.shift()
+    let start = Date.now()
 
-    babel.transformFile(file, babelOpts, (err, result) => {
-      if (err) {
-        return done(new Error(`failed to read or compilee source ${file}: ${err}`))
+    logger.runner(`execute test '${chalk.green(fixture.name)}'...`)
+    execute(opts.file, opts.langage, opts.timeout, fixture.input, fixture.expect).
+      then(out => {
+        let hasError = print(out)
+        logger.runner(`'${chalk[hasError ? 'red' : 'green'](fixture.name)}' executed in ${Date.now() - start} ms\n`)
+        // run next test
+        runTest(opts, fixtures).then(resolve)
+      }).
+      catch(err => {
+        // stop at first exception
+        logger.error(err.message);
+        logger.runner(`'${chalk.red(fixture.name)}' errored in ${Date.now() - start} ms\n`)
+        resolve()
+      })
+  })
+
+const run = (opts) => {
+  let start = Date.now()
+  let fixturePath = path.dirname(opts.file)
+
+  return loadFixtures(fixturePath).
+    then(fixtures => {
+      logger.runner(`loaded ${chalk.green(fixtures.length)} fixtures in ${Date.now() - start} ms`)
+      return runTest(opts, fixtures)
+    })
+}
+
+module.exports = (challenge, opts) =>
+  new Promise((resolve, reject) => {
+    let folder = path.resolve(opts.folder, challenge)
+    opts.langage = opts.langage.toLowerCase().trim()
+
+    if (!supported[opts.langage]) {
+      return reject(new Error(`unsupported langage ${opts.langage}`))
+    }
+    opts.file = path.resolve(folder, `${challenge}.${supported[opts.langage].ext}`)
+
+    run(opts).then(() => {
+      if (!opts.watch) {
+        logger.runner(`execution successful !`)
+        return resolve()
       }
-      logger.runner(`compiled in ${Date.now() - start} ms\n`)
-
-      let interrupt = false
-      fixtures.forEach(fixture => {
-        if(interrupt) {
-          return
-        }
-        let out = []
-        start = Date.now()
-        logger.runner(`execute test '${chalk.green(fixture.name)}'...`)
-        try {
-          setupIO(fixture.input, out, fixture.expect)
-          new Function(result.code)()
-        } catch (exc) {
-          if (exc.message !== 'eof') {
-            interrupt = true
-            setTimeout(() => done(exc), 0)
-          }
-        } finally {
-          let hasError = print(out)
-          logger.runner(`'${chalk[interrupt || hasError ? 'red' : 'green'](fixture.name)}' executed in ${Date.now() - start} ms\n`)
+      // or infinite promise: no resolve
+      logger.runner(`watch for changes in ${chalk.gray(folder)}...\n`)
+      let running = false
+      fs.watch(folder, () => {
+        if (!running) {
+          running = true
+          logger.runner(chalk.bgYellow.black(`--- new execution ---\n`))
+          run(opts).
+            then(() => {
+              running = false
+              logger.runner(`execution successful !`)
+            }).
+            catch(err => {
+              running = false
+              logger.error(`execution successful !`)
+            })
         }
       })
-      if (!interrupt) {
-        done()
-      }
-    })
+    }).catch(reject)
   })
-}
-
-const run = (challenge, opts, done) => {
-  let folder = path.resolve(opts.folder || `./challenges`, challenge)
-  let file = path.resolve(folder, `${challenge}.js`)
-
-  logger.runner(`watch for changes in ${chalk.gray(folder)}...\n`)
-  runOnce(file, opts, opts.watch ? null : done)
-
-  if (opts.watch) {
-    let running = false
-    fs.watch(folder, () => {
-      if (!running) {
-        running = true
-        logger.runner(chalk.bgYellow.black(`--- new execution ---\n`))
-        runOnce(file, opts, err => {
-          running = false
-          defaultDone(err)
-        })
-      }
-    })
-  }
-}
-
-module.exports = run

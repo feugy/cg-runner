@@ -2,4 +2,5 @@ node_modules/
 coverage/
 challenges/
 .vscode/
+js-engine/
 jsconfig.json
