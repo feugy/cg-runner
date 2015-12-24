@@ -1,13 +1,10 @@
 {
   "name": "cg-runner",
   "version": "1.0.0",
-  "description": "",
+  "description": "A command-line program to run your solutions locally, like on www.codingame.com !",
   "main": "src/runner.js",
   "bin": {
     "cg-runner": "./src/cli.js"
-  },
-  "scripts": {
-    "test": "mocha -w test"
   },
   "dependencies": {
     "chalk": "^1.1.1",

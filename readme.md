@@ -1,6 +1,19 @@
 # CodinGame Runner
 
-A command-line program to run your JavaScript solutions locally, like on [CodinGame][cg] !
+A command-line program to run your solutions locally, like on [CodinGame][cg] !
+
+
+## Installation
+
+`cg-runner` is a [node.js][node] application, so you'll need to install `node`
+(and `npm` which is a separated package on linux distributions) to run it.
+
+Once you got them, open a terminal, and install it (only once, need network access):
+
+> npm install -g cg-runner
+
+Then, use `cg-runner` command from your terminal.
+
 
 ## Usage
 
@@ -40,6 +53,9 @@ Options:
 
 If you want to skip some fixtures, give your `.in` file another extension.
 If you want to test against only one fixture, use the `.in.only` extension.
+
+The watch mode will ease your development, and you can now plug external debuging programs
+to your running algorithm.
 
 
 ## Engines
