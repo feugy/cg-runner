@@ -48,11 +48,10 @@ module.exports = (file, langage, timeout, inputs, expects) =>
       })
     })
 
-    engine.stdout.on(`data`, data => {
+    const processOutput = line => {
       clearTimeout(timer)
-      let err
-      let line = data.toString().replace(/[\n\r]/g, '')
       let expected = expects[expectIdx++]
+      let err
       if (line !== expected) {
         err = new Error(`Unexpected output:
   ${chalk.green(`expected: ` + expected)}
@@ -60,7 +59,16 @@ module.exports = (file, langage, timeout, inputs, expects) =>
         `)
       }
       out.push({line, err})
-      setTimeout(sendInputs, 10)
+      // empty expected line: next turn please !
+      if (expectIdx === expects.length || expects[expectIdx] === '') {
+        out[out.length - 1].eot = true
+        expectIdx++
+        setTimeout(sendInputs, 10)
+      }
+    }
+
+    engine.stdout.on(`data`, data => {
+      data.toString().split(/\r?\n/).filter(l => l.length).forEach(processOutput)
     })
 
     engine.on(`close`, errCode => {

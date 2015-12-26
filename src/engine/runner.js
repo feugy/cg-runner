@@ -14,7 +14,7 @@ const print = (out) => {
   return out.some((trace, i) => {
     if (trace.line) {
       logger[trace.debug ? `debug` : `out`](trace.line)
-      if (!trace.debug && i !== out.length - 1) {
+      if (trace.eot) {
         logger.runner(`--- turn ${turn++}`)
       }
     }

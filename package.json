@@ -1,6 +1,6 @@
 {
   "name": "cg-runner",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A command-line program to run your solutions locally, like on www.codingame.com !",
   "repository": {
     "type": "git",

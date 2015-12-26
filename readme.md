@@ -79,8 +79,8 @@ Obviously, you can't simulate complex challenges like bots with a bunch of stati
 And you won't see beautiful CodinGame's animations.
 Take it as a simple way to debug locally your solutions on specific cases.
 
-If the challenge contains a game loop, you need to reflect "turns" in your `.in` fixtures
-by adding a blank line (no tabs, no space) between them.
+If the challenge contains a game loop, you need to reflect "turns" in your `.in` and `.out` fixtures
+by adding a blank line (no tabs, no space) between intput/output of different turns.
 
 A practical example for a challenge expecting 2 inputs at each turns:
 
